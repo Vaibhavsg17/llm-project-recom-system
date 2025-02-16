@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">Project Search</h1>
+        <input id="query" type="text"
+            class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ask your query...">
+        <button onclick="searchProjects()"
+            class="w-full bg-blue-500 text-white py-2 mt-3 rounded-lg hover:bg-blue-600">Search</button>
+        <div id="results" class="mt-5"></div>
+    </div>
+
+    <script>
+        async function searchProjects() {
+            const query = document.getElementById('query').value;
+            if (!query) {
+                alert("Please enter a query.");
+                return;
+            }
+
+            document.getElementById('results').innerHTML = "<p class='text-gray-600'>Searching...</p>";
+            try {
+                const response = await fetch('http://localhost:5000/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `<p class='text-gray-800 p-3 bg-gray-200 rounded'>${data.response}</p>`;
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+                document.getElementById('results').innerHTML = "<p class='text-red-500'>Failed to fetch results.</p>";
+            }
+        }
+    </script>
+</body>
+</html>

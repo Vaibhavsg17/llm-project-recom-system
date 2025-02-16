@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import { getEmbedding } from './get-embeddings.js';
+import { getEmbedding } from '../get-embeddings.js';
 
 // Connect to your Atlas cluster
 const client = new MongoClient(process.env.ATLAS_CONNECTION_STRING);
@@ -14,7 +14,7 @@ async function run() {
         const filter = { "description": { "$exists": true, "$ne": "" } };
 
         // Get a subset of documents from the collection
-        const documents = await collection.find(filter).limit(50).toArray();
+        const documents = await collection.find(filter).toArray();
 
         let updatedDocCount = 0;
         console.log("Generating embeddings for documents...");

@@ -17,7 +17,7 @@ async function run() {
         const collection = database.collection("projects");
 
         // Generate embedding for the search query
-        const queryEmbedding = await getEmbedding("mini project");
+        const queryEmbedding = await getEmbedding("this there any project based on machine learning");
 
         // Define vector search pipeline for description
         const descriptionSearch = {
@@ -26,8 +26,8 @@ async function run() {
                 queryVector: queryEmbedding,
                 path: "description_embedding",
                 exact: true,
-                limit: 5
-            }
+                limit: 10
+            },
         };
 
         // Define vector search pipeline for title
@@ -37,7 +37,7 @@ async function run() {
                 queryVector: queryEmbedding,
                 path: "title_embedding",
                 exact: true,
-                limit: 5
+                limit: 10
             }
         };
 
@@ -48,7 +48,7 @@ async function run() {
                 queryVector: queryEmbedding,
                 path: "keywords_embedding",
                 exact: true,
-                limit: 5
+                limit: 10
             }
         };
 
@@ -58,16 +58,18 @@ async function run() {
             { $unionWith: { coll: "projects", pipeline: [titleSearch] } },
             { $unionWith: { coll: "projects", pipeline: [keywordsSearch] } },
             {
+                $set: { score: { $meta: "vectorSearchScore" } }
+            },
+            { $sort: { score: -1 } },
+            { $limit: 5 },
+            {
                 $project: {
                     _id: 0,
                     title: 1,
                     description: 1,
-                    keywords: 1,
-                    score: { $meta: "vectorSearchScore" }
+                    keywords: 1
                 }
-            },
-            { $sort: { score: -1 } },
-            { $limit: 5 }
+            }
         ];
 
         // Run the aggregation pipeline
@@ -85,11 +87,15 @@ async function run() {
 
         // Define the prompt for the LLM
         const prompt = `
-        Based on the following relevant projects, provide a response that best summarizes and recommends a suitable project:
+        I have retrieved the top 5 most relevant student projects based on a similarity score.below is given data
         
         ${formattedResults}
         
-        Please generate a concise and informative response.
+       Based on this data, generate a concise yet informative response that highlights the best-matching projects. Provide a structured summary that:
+      1. List the top projects, ordered by their relevance scores.  note dont tell user the score and project numbers
+      2. Highlight key features of each project.
+      3. Suggest improvements that can be added to enhance each project.
+      4. Keep the response concise, well-structured, and easy to understand.
         `;
 
         // Call the Grok API
