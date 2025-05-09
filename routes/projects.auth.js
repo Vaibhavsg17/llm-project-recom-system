@@ -36,7 +36,7 @@ router.post("/search", async (req, res) => {
                 queryVector: queryEmbedding,
                 path,
                 exact: true,
-                limit: 10
+                limit: 5
             }
         });
 
@@ -76,7 +76,13 @@ router.post("/search", async (req, res) => {
         Generate a structured summary:
         1. Highlight key features of the top projects.
         2. Suggest improvements for each.
-        3. Keep it concise and easy to understand.`;
+        3. Keep it concise and easy to understand.
+        4. give me each data on new line
+        
+        expected output:
+        1. project Summary
+        2. then list of each project first give title of project then give summary of project
+        3. make the title bold`;
 
         // Call Groq API
         const groqResponse = await axios.post(GROQ_API_URL, {
@@ -86,7 +92,7 @@ router.post("/search", async (req, res) => {
             max_tokens: 500
         }, {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" }
-        });
+        });  
 
         // Send response back to frontend
         res.json({ summary: groqResponse.data.choices[0].message.content });
